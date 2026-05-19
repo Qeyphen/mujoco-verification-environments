@@ -1,17 +1,66 @@
 # MuJoCo Verification Environments
 
-A collection of hermetic, scriptable evaluation frameworks built using the MuJoCo Python API. Instead of optimizing robotics control loops or rendering visual environments, this repository focuses entirely on the engineering backend of automated task verification—building deterministic "digital cages" that isolate physical specifications and programmatically eliminate agent reward hacking.
+A set of tools for running and checking MuJoCo simulations in a reliable, repeatable way.
 
-## 🛠️ Core Capabilities
+This project focuses on the “engineering side” of robot learning systems—making sure simulations behave consistently, break early when something goes wrong, and can be evaluated in a clean and controlled way.
 
-* **Multi-Strata Evaluation Pipelines:** Sequential validation layered across **Structural** constants (blueprints), **Static** kinematics passes (`mj_forward`), dynamic **Rollout** tracking (`mj_step`), and parameter **Robustness** sweeps (mass/friction perturbations).
-* **Anti-Cheat Architecture:** Programmatic boundaries (Feasibility Shells) designed to catch degenerate LLM or RL agent solutions, such as unjointed structural clones, sky-welded torsos, and ground-wedging clipping exploits.
-* **Numerical Sanity Defense:** Automated runtime interception that flags simulation instability, identifying system explosions, velocity spikes, contact abnormalities, and matrix crashes (`NaN`/`Inf` collapses) before process termination.
-* **Strict Determinism Enforcers:** Bit-for-bit reproducible trajectory verification lines built on isolated memory state cache management, precise full-state specification, and rigid time-step tracking primitives.
+---
 
-## 📦 Project Directory
+## What This Project Does
 
-* `/tools/model_inspector.py`: A native command-line utility that extracts contiguous memory array allocations and structural constants directly from compiled physics layout objects.
-* `/tools/sanity_checker.py`: An automated frame-by-frame diagnostic engine that monitors dynamic rollouts for conservation flaws, deep penetrations, and mechanical degradation.
-* `/tasks/damped_pendulum/`: A full implementation of a high-fidelity system specification task, complete with precision log-decrement damping analysis, peak tracking, and adversarial verification cases.
-* `/tasks/hopper/`: A complex 3-joint kinematic tree grading module featuring weighted multi-criteria rubrics and mid-run environmental shock testing.
+It provides a collection of utilities for building and testing MuJoCo environments in a way that is:
+
+- deterministic (same input → same result)
+- stable (detects failures early)
+- measurable (easy to analyze and compare runs)
+- robust to edge cases and simulation tricks
+
+The goal is not to design robots or policies, but to make sure the environment they run in is trustworthy.
+
+---
+
+## Evaluation Pipeline
+
+Simulations are checked in layers, from basic structure to full behavior:
+
+- **Model validation**  
+  Checks that the simulation structure is valid and physically consistent.
+
+- **Physics sanity checks**  
+  Makes sure dynamics behave as expected (no explosions, invalid states, or broken constraints).
+
+- **Rollout evaluation**  
+  Runs full simulations and evaluates stability, progress, and overall behavior over time.
+
+- **Robustness testing**  
+  Re-runs scenarios under small changes (mass, friction, initial state) to see if results still hold.
+
+---
+
+## Safety & Failure Detection
+
+The system is designed to catch problems early instead of letting simulations silently fail.
+
+It monitors things like:
+
+- NaN or infinite values appearing in the state
+- sudden spikes in velocity or energy
+- objects passing through each other incorrectly
+- drift in energy conservation over time
+
+When something looks wrong, it flags it immediately instead of continuing blindly.
+
+---
+
+## Determinism & Reproducibility
+
+A core goal of this project is making simulations fully reproducible.
+
+That means:
+
+- identical runs produce identical results
+- randomness is fully controlled through seeds
+- simulation state can be fully restored and replayed
+- time steps are strictly tracked and consistent
+
+This makes debugging, testing, and comparison much more reliable.
